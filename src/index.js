@@ -186,13 +186,20 @@ const processAttachments = async (content, pid) => {
 		SELECT * FROM ${prefix}attachments WHERE post_msg_id = ${pid}
 	`)).map(a => ({
       orig_filename: a.real_filename,
-      url: "/uploads/phpbb/" + a.physical_filename + '.' + a.extension,
+      url: "/uploads/phpbb/" + a.physical_filename,
     }))
   console.log('processing', attachments)
+  const temp = [];
   for (const att of attachments) {
+    if (content.indexOf(att.orig_filename) === -1) {
+      temp.push(`![${att.orig_filename}](${att.url})`);
+    }
     content = content.replace(
       new RegExp(`\\[attachment.+\\]${att.orig_filename}\\[/attachment\\]`, 'g'), `![${att.orig_filename}](${att.url})`
     )
+  }
+  if (temp.length > 0) {
+    return content + '\n' + temp.join('\n');
   }
   return content
 }
